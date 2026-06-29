@@ -320,30 +320,90 @@ def clear_document_body(document):
         body.remove(element)
 
 
+def find_template_style_by_names(document, candidates):
+    for name in candidates:
+        try:
+            _ = document.styles[name]
+            return name
+        except Exception:
+            continue
+    return None
+
+
 def find_template_style(document, target):
     if target == "heading":
+        candidates = [
+            "H1_No Space", "H1", "Heading 1", "Heading1", "paper_heading_1", "Title1", "제목-1", "Heading(even)", "Heading(odd)",
+            "Heading 2", "Heading 3", "Heading 4", "Heading 5",
+        ]
+        name = find_template_style_by_names(document, candidates)
+        if name:
+            return name
         candidates = [s.name for s in document.styles if "heading" in s.name.lower()]
         if candidates:
             return candidates[0]
+    if target == "heading2":
+        candidates = [
+            "H2", "H2_No Space", "Heading 2", "Heading2", "paper_heading_2", "Heading(odd)", "heading2", "Heading 1",
+        ]
+        name = find_template_style_by_names(document, candidates)
+        if name:
+            return name
+        return find_template_style(document, "heading")
+    if target == "abstract":
+        return find_template_style_by_names(document, ["Abstract", "abstract", "Abstract/Keyword", "Abstract내용-1"])
+    if target == "keywords":
+        return find_template_style_by_names(document, ["IT", "keywords", "Keyword", "Keywords", "Abstract/Keyword", "@키워드"])
     if target == "normal":
-        for name in ["正文", "Normal", "Body Text", "正文文本"]:
-            try:
-                _ = document.styles[name]
-                return name
-            except Exception:
-                continue
-        return "Normal"
+        return find_template_style_by_names(document, [
+            "PARA", "본문-2", "Body Text", "Normal (Web)", "Normal", "Paper Title", "Text", "본문내용", "Body Text 3", "본문-1",
+        ]) or "Normal"
     return None
+
+
+def is_subsection_heading(text):
+    if not text:
+        return False
+    return bool(re.match(r"^\d+(\.\d+)+", text.strip())) or bool(re.match(r"^[A-Z]\.", text.strip()))
+
+
+def is_abstract_heading(text):
+    lowered = text.strip().lower()
+    return lowered.startswith("abstract") or lowered.startswith("摘要") or lowered.startswith("abstract:")
+
+
+def is_keywords_heading(text):
+    lowered = text.strip().lower()
+    return lowered.startswith("keywords") or lowered.startswith("keyword") or lowered.startswith("关键词")
 
 
 def build_formatted_document(article_paragraphs, template_path):
     document = Document(template_path)
     heading_style = find_template_style(document, "heading") or "Heading 1"
+    heading2_style = find_template_style(document, "heading2") or heading_style
+    abstract_style = find_template_style(document, "abstract")
+    keywords_style = find_template_style(document, "keywords")
     normal_style = find_template_style(document, "normal") or "Normal"
     clear_document_body(document)
 
     for para_text, para_type in article_paragraphs:
-        style = heading_style if para_type == "heading" else normal_style
+        style = normal_style
+        if para_type == "heading":
+            if is_abstract_heading(para_text) and abstract_style:
+                style = abstract_style
+            elif is_keywords_heading(para_text) and keywords_style:
+                style = keywords_style
+            elif is_subsection_heading(para_text):
+                style = heading2_style
+            else:
+                style = heading_style
+        else:
+            if is_abstract_heading(para_text) and abstract_style:
+                style = abstract_style
+            elif is_keywords_heading(para_text) and keywords_style:
+                style = keywords_style
+            else:
+                style = normal_style
         document.add_paragraph(para_text, style=style)
 
     return document
