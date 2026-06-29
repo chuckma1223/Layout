@@ -342,38 +342,9 @@ def build_formatted_document(article_paragraphs, template_path):
     normal_style = find_template_style(document, "normal") or "Normal"
     clear_document_body(document)
 
-    def apply_fonts_and_format(paragraph_obj, is_heading=False):
-        # paragraph formatting
-        try:
-            pformat = paragraph_obj.paragraph_format
-            pformat.space_after = Pt(6)
-            pformat.line_spacing = 1.5
-            pformat.first_line_indent = Pt(18)
-        except Exception:
-            pass
-
-        # run-level fonts: Chinese -> 宋体, English -> Times New Roman
-        for run in paragraph_obj.runs:
-            text = run.text or ""
-            if any('\u4e00' <= ch <= '\u9fff' for ch in text):
-                try:
-                    run.font.name = 'Times New Roman'  # keep latin font name
-                    rPr = run._element.rPr
-                    rFonts = rPr.rFonts if hasattr(rPr, 'rFonts') else None
-                    # set eastAsia font
-                    run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
-                except Exception:
-                    pass
-            else:
-                try:
-                    run.font.name = 'Times New Roman'
-                except Exception:
-                    pass
-
     for para_text, para_type in article_paragraphs:
         style = heading_style if para_type == "heading" else normal_style
-        p = document.add_paragraph(para_text, style=style)
-        apply_fonts_and_format(p, is_heading=(para_type == 'heading'))
+        document.add_paragraph(para_text, style=style)
 
     return document
 
