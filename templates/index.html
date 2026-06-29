@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IEEE Access 自动排版</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <div class="page-shell">
+        <div class="container">
+            <header>
+                <div class="title-row">
+                    <div>
+                        <h1>IEEE Access 自动排版</h1>
+                        <p>基于模板自动生成符合期刊规范的学术排版文档。</p>
+                    </div>
+                    <span class="badge">实验版</span>
+                </div>
+            </header>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <div class="flash">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="article_file">文章文件 (.doc/.docx/.txt)</label>
+                <input type="file" id="article_file" name="article_file" accept=".doc,.docx,.txt" required />
+            </div>
+            <div class="form-group">
+                <label for="builtin_template">选择内置模板</label>
+                <select id="builtin_template" name="builtin_template" required>
+                    {% for template in builtin_templates %}
+                        <option value="{{ template }}">{{ template }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="template_file">或上传自定义模板 (.doc/.docx)</label>
+                <input type="file" id="template_file" name="template_file" accept=".doc,.docx" />
+            </div>
+            <div class="form-group">
+                <label for="ai_api_key">AI API Key（可选，SiliconFlow）</label>
+                <input type="password" id="ai_api_key" name="ai_api_key" placeholder="sk-..." />
+            </div>
+            <div class="form-group">
+                <label for="ai_endpoint">AI 接口地址（可选）</label>
+                <input type="text" id="ai_endpoint" name="ai_endpoint" value="https://api.siliconflow.cn/v1/chat/completions" />
+            </div>
+            <div class="form-group">
+                <label for="ai_model">AI 模型名（可选）</label>
+                <input type="text" id="ai_model" name="ai_model" value="Qwen/Qwen2.5-72B-Instruct" />
+            </div>
+            <div class="notes">
+                <p>提示：支持上传 <code>.doc</code> / <code>.docx</code> / <code>.txt</code> 文章，支持上传 <code>.doc</code> / <code>.docx</code> 模板。</p>
+                <p>系统已增强中文标题识别，可匹配“摘要”“引言”“相关工作”“方法”“结果”“结论”“参考文献”“致谢”等章节。</p>
+                <p>若上传 <code>.doc</code> 文件，系统会尝试在 Windows Word 中自动转换为 <code>.docx</code>。</p>
+                <p>如果你填写了 AI API Key，系统会在文章没有清晰章节标题时自动调用 AI 进行章节识别与切分。</p>
+                <p>下载时浏览器会提示保存位置，可选择电脑目录进行存储。</p>
+                <p>输出文档为 <code>.docx</code> 格式，建议使用 Word 打开后另存为最终稿。</p>
+            </div>
+            <button type="submit">生成排版文档</button>
+        </form>
+        {% if download_url %}
+            <div class="download-panel">
+                <p>排版完成，点击下面按钮下载结果：</p>
+                <a class="download-button" href="{{ download_url }}">下载 {{ download_name }}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+    </div>
+</body>
+</html>

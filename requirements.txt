@@ -1,0 +1,7 @@
+Flask>=2.0
+python-docx>=0.8.11
+docx2txt>=0.8
+pywin32>=305
+mammoth>=1.4.19
+requests>=2.31.0
+python-dotenv>=1.0.0

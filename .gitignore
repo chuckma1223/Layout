@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.env.*
+
+# Local uploads and generated files
+uploads/
+*.docx
+*.doc
+*.tmp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
